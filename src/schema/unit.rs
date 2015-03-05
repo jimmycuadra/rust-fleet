@@ -23,6 +23,20 @@ pub struct UnitPage {
     next_page_token: Option<String>,
 }
 
+pub struct UnitState {
+    name: String,
+    hash: String,
+    machine_id: String,
+    systemd_load_state: String,
+    systemd_active_state: String,
+    systemd_sub_state: String,
+}
+
+pub struct UnitStatePage {
+    states: Vec<UnitState>,
+    next_page_token: Option<String>,
+}
+
 #[cfg(test)]
 mod unit_tests {
     use super::{Unit, UnitStates, UnitOption};
@@ -77,6 +91,60 @@ mod unit_page_tests {
 
         UnitPage {
             units: vec![unit],
+            next_page_token: None,
+        };
+    }
+}
+
+#[cfg(test)]
+mod unit_state_tests {
+    use super::UnitState;
+
+    #[test]
+    fn it_can_be_constructed() {
+        UnitState {
+            name: "example.service".to_string(),
+            hash: "abc123".to_string(),
+            machine_id: "123abc".to_string(),
+            systemd_load_state: "loaded".to_string(),
+            systemd_active_state: "active".to_string(),
+            systemd_sub_state: "running".to_string(),
+        };
+    }
+}
+
+#[cfg(test)]
+mod unit_state_page_tests {
+    use super::{UnitState, UnitStatePage};
+
+    fn it_can_be_paginated() {
+        let unit_state = UnitState {
+            name: "example.service".to_string(),
+            hash: "abc123".to_string(),
+            machine_id: "123abc".to_string(),
+            systemd_load_state: "loaded".to_string(),
+            systemd_active_state: "active".to_string(),
+            systemd_sub_state: "running".to_string(),
+        };
+
+        UnitStatePage {
+            states: vec![unit_state],
+            next_page_token: Some("8fefec2c".to_string()),
+        };
+    }
+
+    fn it_can_have_no_additional_pages() {
+        let unit_state = UnitState {
+            name: "example.service".to_string(),
+            hash: "abc123".to_string(),
+            machine_id: "123abc".to_string(),
+            systemd_load_state: "loaded".to_string(),
+            systemd_active_state: "active".to_string(),
+            systemd_sub_state: "running".to_string(),
+        };
+
+        UnitStatePage {
+            states: vec![unit_state],
             next_page_token: None,
         };
     }
