@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 extern crate hyper;
 
 pub mod client;
