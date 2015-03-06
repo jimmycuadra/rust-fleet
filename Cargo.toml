@@ -13,3 +13,4 @@ homepage = "https://github.com/jimmycuadra/fleet_client"
 [dependencies]
 
 hyper = "0.3.0"
+rustc-serialize = "0.3.1"

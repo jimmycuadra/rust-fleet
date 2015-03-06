@@ -4,6 +4,17 @@ pub enum UnitStates {
     Launched,
 }
 
+impl UnitStates {
+    pub fn to_json(&self) -> &'static str {
+        match *self {
+            UnitStates::Inactive => "inactive",
+            UnitStates::Loaded => "loaded",
+            UnitStates::Launched => "launched",
+        }
+    }
+}
+
+#[derive(RustcEncodable)]
 pub struct UnitOption {
     name: String,
     section: String,
