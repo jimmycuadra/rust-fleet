@@ -43,6 +43,7 @@ mod client_tests {
     }
 
     #[test]
+    #[should_panic]
     fn it_can_create_units() {
         let client = Client::new("http://it_can_create_units.example.com");
 
