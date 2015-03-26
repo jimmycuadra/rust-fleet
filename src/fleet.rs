@@ -14,6 +14,20 @@ impl FleetAPI {
         }
     }
 
+    pub fn get_unit(&self, name: &str) -> Result<Json, String> {
+        let url = &self.url(&format!("/units/{}", name))[..];
+        let mut response = self.get(url);
+
+        match response.status {
+            StatusCode::Ok => {
+                let json = Json::from_reader(&mut response).unwrap();
+                Ok(json.find("unit").unwrap().clone())
+            },
+            StatusCode::NotFound => Err("Unit not found".to_string()),
+            status_code => Err(format!("Unexpected response: {}", status_code)),
+        }
+    }
+
     pub fn get_units(&self) -> Result<Vec<Json>, String> {
         let url = &self.url("/units")[..];
         let mut response = self.get(url);
