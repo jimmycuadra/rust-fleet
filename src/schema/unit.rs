@@ -1,7 +1,12 @@
+use std::str::FromStr;
+
 pub enum UnitStates {
     Inactive,
     Loaded,
     Launched,
+}
+
+impl FromStr for UnitStates {
 }
 
 impl UnitStates {
