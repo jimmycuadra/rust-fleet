@@ -34,9 +34,7 @@ impl Client {
 
     pub fn list_units(&self) -> Result<Vec<Unit>, String> {
         match self.fleet.get_units() {
-            Ok(units_json) => {
-                Ok(units_json.iter().map(|json| self.unit_from_json(json)).collect())
-            },
+            Ok(units_json) => Ok(units_json.iter().map(|json| self.unit_from_json(json)).collect()),
             Err(error) => Err(error),
         }
     }
