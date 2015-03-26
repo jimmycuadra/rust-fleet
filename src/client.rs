@@ -25,7 +25,7 @@ impl Client {
         let options_json = json::encode(&options).unwrap();
         let mut body = HashMap::new();
 
-        body.insert("desired_state", desired_state.to_json());
+        body.insert("desiredState", desired_state.to_json());
         body.insert("options", &options_json);
 
         self.fleet.put_units(name, &json::encode(&body).unwrap())
