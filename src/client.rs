@@ -22,7 +22,7 @@ impl Client {
         name: &'static str,
         desired_state: UnitStates,
         options: Vec<UnitOption>
-    ) -> Result<(), &str> {
+    ) -> Result<(), String> {
         let options_json = json::encode(&options).unwrap();
         let mut body = HashMap::new();
 
@@ -41,7 +41,7 @@ impl Client {
         }
     }
 
-    pub fn modify_unit(&self, name: &'static str, desired_state: UnitStates) -> Result<(), &str> {
+    pub fn modify_unit(&self, name: &'static str, desired_state: UnitStates) -> Result<(), String> {
         let mut body = HashMap::new();
 
         body.insert("desiredState", desired_state.to_json());

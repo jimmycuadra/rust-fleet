@@ -27,16 +27,16 @@ impl FleetAPI {
         }
     }
 
-    pub fn put_unit(&self, name: &'static str, body: &str) -> Result<(), &'static str> {
+    pub fn put_unit(&self, name: &'static str, body: &str) -> Result<(), String> {
         let url = &self.url(&format!("/units/{}", name))[..];
         let response = self.put(url, body);
 
         match response.status {
             StatusCode::Created => Ok(()),
             StatusCode::NoContent => Ok(()),
-            StatusCode::Conflict => Err("UnitOptions are required"),
-            StatusCode::BadRequest => Err("Invalid unit"),
-            status_code => panic!("Unexpected response: {}", status_code)
+            StatusCode::Conflict => Err("UnitOptions are required".to_string()),
+            StatusCode::BadRequest => Err("Invalid unit".to_string()),
+            status_code => Err(format!("Unexpected response: {}", status_code))
         }
     }
 
