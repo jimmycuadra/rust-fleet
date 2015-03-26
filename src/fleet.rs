@@ -19,6 +19,7 @@ impl FleetAPI {
 
         match response.status {
             StatusCode::Created => Ok(()),
+            StatusCode::NoContent => Ok(()),
             StatusCode::Conflict => Err("UnitOptions are required"),
             StatusCode::BadRequest => Err("Invalid unit"),
             status_code => panic!("Unexpected response: {}", status_code)

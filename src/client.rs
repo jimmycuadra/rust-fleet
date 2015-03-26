@@ -30,6 +30,14 @@ impl Client {
 
         self.fleet.put_unit(name, &json::encode(&body).unwrap())
     }
+
+    pub fn modify_unit(&self, name: &'static str, desired_state: UnitStates) -> Result<(), &str> {
+        let mut body = HashMap::new();
+
+        body.insert("desiredState", desired_state.to_json());
+
+        self.fleet.put_unit(name, &json::encode(&body).unwrap())
+    }
 }
 
 #[cfg(test)]
