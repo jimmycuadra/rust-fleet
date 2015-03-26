@@ -13,7 +13,7 @@ impl FleetAPI {
         }
     }
 
-    pub fn put_units(&self, name: &'static str, body: &str) -> Result<(), &'static str> {
+    pub fn put_unit(&self, name: &'static str, body: &str) -> Result<(), &'static str> {
         let url = &self.url(format!("/units/{}", name))[..];
         let response = self.put(url, body);
 

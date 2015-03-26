@@ -28,7 +28,7 @@ impl Client {
         body.insert("desiredState", desired_state.to_json());
         body.insert("options", &options_json);
 
-        self.fleet.put_units(name, &json::encode(&body).unwrap())
+        self.fleet.put_unit(name, &json::encode(&body).unwrap())
     }
 }
 
