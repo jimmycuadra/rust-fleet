@@ -5,6 +5,17 @@ pub enum UnitStates {
 }
 
 impl UnitStates {
+    pub fn from_str(s: &str) -> UnitStates {
+        match s {
+            "inactive" => UnitStates::Inactive,
+            "loaded" => UnitStates::Loaded,
+            "launched" => UnitStates::Launched,
+            variant => panic!("not a valid UnitStates variant: {}", variant),
+        }
+    }
+}
+
+impl UnitStates {
     pub fn to_json(&self) -> &'static str {
         match *self {
             UnitStates::Inactive => "inactive",
@@ -16,17 +27,17 @@ impl UnitStates {
 
 #[derive(RustcEncodable)]
 pub struct UnitOption {
-    name: String,
-    section: String,
-    value: String,
+    pub name: String,
+    pub section: String,
+    pub value: String,
 }
 
 pub struct Unit {
-    current_state: UnitStates,
-    desired_state: UnitStates,
-    machine_id: String,
-    name: String,
-    options: Vec<UnitOption>,
+    pub current_state: UnitStates,
+    pub desired_state: UnitStates,
+    pub machine_id: String,
+    pub name: String,
+    pub options: Vec<UnitOption>,
 }
 
 pub struct UnitPage {

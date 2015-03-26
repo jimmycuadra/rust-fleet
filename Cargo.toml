@@ -10,6 +10,11 @@ keywords = ["fleet", "coreos", "systemd"]
 repository = "https://github.com/jimmycuadra/fleet_client"
 homepage = "https://github.com/jimmycuadra/fleet_client"
 
+[lib]
+
+name = "fleet_client"
+doctest = false
+
 [dependencies]
 
 hyper = ">= 0.3.3"
