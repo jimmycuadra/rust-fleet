@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, HashMap};
 
 use rustc_serialize::json::{self, Json};
 
-use schema::{Unit, UnitOption, UnitStates};
+use schema::{Unit, UnitOption, UnitState, UnitStates};
 use fleet::FleetAPI;
 
 pub struct Client {
@@ -38,6 +38,29 @@ impl Client {
     pub fn get_unit(&self, name: &str) -> Result<Unit, String> {
         match self.fleet.get_unit(name) {
             Ok(json) => Ok(self.unit_from_json(&json)),
+            Err(error) => Err(error),
+        }
+    }
+
+    pub fn list_unit_states(
+        &self,
+        machine_id: Option<&str>,
+        unit_name: Option<&str>
+    ) -> Result<Vec<UnitState>, String> {
+        let mut query_pairs = HashMap::new();
+
+        if machine_id.is_some() {
+            query_pairs.insert("machineID", machine_id.unwrap());
+        }
+
+        if unit_name.is_some() {
+            query_pairs.insert("unitName", unit_name.unwrap());
+        }
+
+        match self.fleet.get_unit_states(query_pairs) {
+            Ok(unit_states_json) => {
+                Ok(unit_states_json.iter().map(|json| self.unit_state_from_json(json)).collect())
+            },
             Err(error) => Err(error),
         }
     }
@@ -82,6 +105,19 @@ impl Client {
             name: self.get_string_value(unit_obj, "name").to_string(),
             section: self.get_string_value(unit_obj, "section").to_string(),
             value: self.get_string_value(unit_obj, "value").to_string(),
+        }
+    }
+
+    fn unit_state_from_json(&self, json: &Json) -> UnitState {
+        let unit_obj = json.as_object().unwrap();
+
+        UnitState {
+            name: self.get_string_value(unit_obj, "name").to_string(),
+            hash: self.get_string_value(unit_obj, "hash").to_string(),
+            machine_id: self.get_string_value(unit_obj, "machineID").to_string(),
+            systemd_load_state: self.get_string_value(unit_obj, "systemdLoadState").to_string(),
+            systemd_active_state: self.get_string_value(unit_obj, "systemdActiveState").to_string(),
+            systemd_sub_state: self.get_string_value(unit_obj, "systemdSubState").to_string(),
         }
     }
 }

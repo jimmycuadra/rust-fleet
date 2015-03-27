@@ -1,4 +1,7 @@
-use hyper::client::{Client, Response};
+use std::collections::HashMap;
+
+use hyper::Url;
+use hyper::client::{Client, IntoUrl, Response};
 use hyper::header::ContentType;
 use hyper::status::StatusCode;
 use rustc_serialize::json::Json;
@@ -39,6 +42,21 @@ impl FleetAPI {
         }
     }
 
+    pub fn get_unit_states(&self, query_pairs: HashMap<&str, &str>) -> Result<Vec<Json>, String> {
+        let base_url = &self.url("/state")[..];
+        let mut url = Url::parse(base_url).unwrap();
+        url.set_query_from_pairs(query_pairs.iter().map(|(k, v)| (*k, *v)));
+        let mut response = self.get(url);
+
+        match response.status {
+            StatusCode::Ok => {
+                let json = Json::from_reader(&mut response).unwrap();
+                Ok(json.find("unit_states").unwrap().as_array().unwrap().clone())
+            },
+            status_code => Err(format!("Unexpected response: {}", status_code)),
+        }
+    }
+
     pub fn get_units(&self) -> Result<Vec<Json>, String> {
         let url = &self.url("/units")[..];
         let mut response = self.get(url);
@@ -72,7 +90,7 @@ impl FleetAPI {
         client.delete(url).header(content_type).send().unwrap()
     }
 
-    fn get(&self, url: &str) -> Response {
+    fn get<U: IntoUrl>(&self, url: U) -> Response {
         let mut client = Client::new();
         let content_type: ContentType = ContentType("application/json".parse().unwrap());
 

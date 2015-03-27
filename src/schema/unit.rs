@@ -46,12 +46,12 @@ pub struct UnitPage {
 }
 
 pub struct UnitState {
-    name: String,
-    hash: String,
-    machine_id: String,
-    systemd_load_state: String,
-    systemd_active_state: String,
-    systemd_sub_state: String,
+    pub name: String,
+    pub hash: String,
+    pub machine_id: String,
+    pub systemd_load_state: String,
+    pub systemd_active_state: String,
+    pub systemd_sub_state: String,
 }
 
 pub struct UnitStatePage {
