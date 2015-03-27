@@ -1,5 +1,4 @@
 use std::collections::{BTreeMap, HashMap};
-use std::str::FromStr;
 
 use rustc_serialize::json::{self, Json};
 
