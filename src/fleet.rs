@@ -34,8 +34,7 @@ impl FleetAPI {
 
         match response.status {
             StatusCode::Ok => {
-                let json = Json::from_reader(&mut response).unwrap();
-                Ok(json.find("unit").unwrap().clone())
+                Ok(Json::from_reader(&mut response).unwrap())
             },
             StatusCode::NotFound => Err("Unit not found".to_string()),
             status_code => Err(format!("Unexpected response: {}", status_code)),
@@ -51,7 +50,7 @@ impl FleetAPI {
         match response.status {
             StatusCode::Ok => {
                 let json = Json::from_reader(&mut response).unwrap();
-                Ok(json.find("unit_states").unwrap().as_array().unwrap().clone())
+                Ok(json.find("states").unwrap().as_array().unwrap().clone())
             },
             status_code => Err(format!("Unexpected response: {}", status_code)),
         }
