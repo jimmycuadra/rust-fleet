@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, HashMap};
 
 use rustc_serialize::json::{self, Json};
 
-use schema::{Unit, UnitOption, UnitState, UnitStates};
+use schema::{Machine, Unit, UnitOption, UnitState, UnitStates};
 use fleet::FleetAPI;
 
 pub struct Client {
@@ -38,6 +38,15 @@ impl Client {
     pub fn get_unit(&self, name: &str) -> Result<Unit, String> {
         match self.fleet.get_unit(name) {
             Ok(json) => Ok(self.unit_from_json(&json)),
+            Err(error) => Err(error),
+        }
+    }
+
+    pub fn list_machines(&self) -> Result<Vec<Machine>, String> {
+        match self.fleet.get_machines() {
+            Ok(units_json) => {
+                Ok(units_json.iter().map(|json| self.machine_from_json(json)).collect())
+            },
             Err(error) => Err(error),
         }
     }
@@ -80,8 +89,35 @@ impl Client {
         self.fleet.put_unit(name, &json::encode(&body).unwrap())
     }
 
+    fn get_metadata_hashmap(&self, json_obj: &BTreeMap<String, Json>) -> HashMap<String, String> {
+        let mut metadata = HashMap::new();
+
+        match json_obj.get("metadata") {
+            Some(metadata_json) => {
+                let metadata_json_obj = metadata_json.as_object().unwrap();
+
+                for (key, value) in metadata_json_obj.iter() {
+                    metadata.insert(key.clone(), value.as_string().unwrap().to_string());
+                }
+
+                metadata
+            },
+            None => metadata,
+        }
+    }
+
     fn get_string_value<'a>(&'a self, json_obj: &'a BTreeMap<String, Json>, key: &str) -> &str {
         json_obj.get(key).unwrap().as_string().unwrap()
+    }
+
+    fn machine_from_json(&self, json: &Json) -> Machine {
+        let machine_obj = json.as_object().unwrap();
+
+        Machine {
+            id: self.get_string_value(machine_obj, "id").to_string(),
+            metadata: self.get_metadata_hashmap(machine_obj),
+            primary_ip: self.get_string_value(machine_obj, "primaryIP").to_string(),
+        }
     }
 
     fn unit_from_json(&self, json: &Json) -> Unit {

@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
 pub struct Machine {
-    id: String,
-    metadata: Option<HashMap<String, String>>,
-    primary_ip: String,
+    pub id: String,
+    pub metadata: HashMap<String, String>,
+    pub primary_ip: String,
 }
 
 pub struct MachinePage {
@@ -21,7 +21,7 @@ mod machine_tests {
     fn it_can_be_constructed() {
         Machine {
             id: "abc123".to_string(),
-            metadata: None,
+            metadata: HashMap::new(),
             primary_ip: "1.2.3.4".to_string(),
         };
     }
@@ -34,7 +34,7 @@ mod machine_tests {
 
         Machine {
             id: "abc123".to_string(),
-            metadata: Some(metadata),
+            metadata: metadata,
             primary_ip: "1.2.3.4".to_string(),
         };
     }
@@ -42,13 +42,15 @@ mod machine_tests {
 
 #[cfg(test)]
 mod machine_page_tests {
+    use std::collections::HashMap;
+
     use super::{Machine,MachinePage};
 
     #[test]
     fn it_can_be_paginated() {
         let machine = Machine {
             id: "abc123".to_string(),
-            metadata: None,
+            metadata: HashMap::new(),
             primary_ip: "1.2.3.4".to_string(),
         };
 
@@ -62,7 +64,7 @@ mod machine_page_tests {
     fn it_can_have_no_additional_pages() {
         let machine = Machine {
             id: "abc123".to_string(),
-            metadata: None,
+            metadata: HashMap::new(),
             primary_ip: "1.2.3.4".to_string(),
         };
 
