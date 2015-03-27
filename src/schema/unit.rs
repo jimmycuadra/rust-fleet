@@ -13,9 +13,7 @@ impl UnitStates {
             variant => panic!("not a valid UnitStates variant: {}", variant),
         }
     }
-}
 
-impl UnitStates {
     pub fn to_json(&self) -> &'static str {
         match *self {
             UnitStates::Inactive => "inactive",
