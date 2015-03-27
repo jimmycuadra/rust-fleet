@@ -31,6 +31,10 @@ impl Client {
         self.fleet.put_unit(name, &json::encode(&body).unwrap())
     }
 
+    pub fn destroy_unit(&self, name: &str) -> Result<(), String> {
+        self.fleet.destroy_unit(name)
+    }
+
     pub fn get_unit(&self, name: &str) -> Result<Unit, String> {
         match self.fleet.get_unit(name) {
             Ok(json) => Ok(self.unit_from_json(&json)),

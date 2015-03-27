@@ -14,6 +14,17 @@ impl FleetAPI {
         }
     }
 
+    pub fn destroy_unit(&self, name: &str) -> Result<(), String> {
+        let url = &self.url(&format!("/units/{}", name))[..];
+        let response = self.delete(url);
+
+        match response.status {
+            StatusCode::Ok => Ok(()),
+            StatusCode::NotFound => Err("Unit not found".to_string()),
+            status_code => Err(format!("Unexpected response: {}", status_code)),
+        }
+    }
+
     pub fn get_unit(&self, name: &str) -> Result<Json, String> {
         let url = &self.url(&format!("/units/{}", name))[..];
         let mut response = self.get(url);
@@ -52,6 +63,13 @@ impl FleetAPI {
             StatusCode::BadRequest => Err("Invalid unit".to_string()),
             status_code => Err(format!("Unexpected response: {}", status_code))
         }
+    }
+
+    fn delete(&self, url: &str) -> Response {
+        let mut client = Client::new();
+        let content_type: ContentType = ContentType("application/json".parse().unwrap());
+
+        client.delete(url).header(content_type).send().unwrap()
     }
 
     fn get(&self, url: &str) -> Response {
