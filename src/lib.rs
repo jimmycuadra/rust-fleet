@@ -3,7 +3,9 @@
 extern crate hyper;
 extern crate rustc_serialize;
 
-pub mod client;
-pub mod schema;
+pub use client::Client;
+pub use schema::{Machine, Unit, UnitOption, UnitState, UnitStates};
 
+mod client;
 mod fleet;
+mod schema;
