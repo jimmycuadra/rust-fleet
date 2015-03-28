@@ -1,9 +1,10 @@
 use std::collections::{BTreeMap, HashMap};
 
-use rustc_serialize::json::{self, Json};
+use rustc_serialize::json::{self, Json, ToJson};
 
-use schema::{Machine, Unit, UnitOption, UnitState, UnitStates};
 use fleet::FleetAPI;
+use schema::{Machine, Unit, UnitOption, UnitState, UnitStates};
+use serialize::{CreateUnit, ModifyUnit};
 
 pub struct Client {
     fleet: FleetAPI,
@@ -22,14 +23,12 @@ impl Client {
         desired_state: UnitStates,
         options: Vec<UnitOption>
     ) -> Result<(), String> {
-        let options_json_string = json::encode(&options).unwrap();
-        let options_json_object = Json::from_str(&options_json_string).unwrap();
-        let mut body = HashMap::new();
+        let serializer = CreateUnit {
+            desiredState: desired_state.to_json(),
+            options: options,
+        };
 
-        body.insert("desiredState", Json::String(desired_state.to_str().to_string()));
-        body.insert("options", options_json_object);
-
-        self.fleet.put_unit(name, &json::encode(&body).unwrap())
+        self.fleet.put_unit(name, &json::encode(&serializer).unwrap())
     }
 
     pub fn destroy_unit(&self, name: &str) -> Result<(), String> {
@@ -83,11 +82,11 @@ impl Client {
     }
 
     pub fn modify_unit(&self, name: &'static str, desired_state: UnitStates) -> Result<(), String> {
-        let mut body = HashMap::new();
+        let serializer = ModifyUnit {
+            desiredState: desired_state.to_json(),
+        };
 
-        body.insert("desiredState", Json::String(desired_state.to_str().to_string()));
-
-        self.fleet.put_unit(name, &json::encode(&body).unwrap())
+        self.fleet.put_unit(name, &json::encode(&serializer).unwrap())
     }
 
     fn get_metadata_hashmap(&self, json_obj: &BTreeMap<String, Json>) -> HashMap<String, String> {

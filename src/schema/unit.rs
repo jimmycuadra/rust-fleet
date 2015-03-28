@@ -1,3 +1,5 @@
+use rustc_serialize::json::{Json, ToJson};
+
 pub enum UnitStates {
     Inactive,
     Loaded,
@@ -13,13 +15,17 @@ impl UnitStates {
             variant => panic!("not a valid UnitStates variant: {}", variant),
         }
     }
+}
 
-    pub fn to_str(&self) -> &'static str {
-        match *self {
+impl ToJson for UnitStates {
+    fn to_json(&self) -> Json {
+        let value = match *self {
             UnitStates::Inactive => "inactive",
             UnitStates::Loaded => "loaded",
             UnitStates::Launched => "launched",
-        }
+        };
+
+        Json::String(value.to_string())
     }
 }
 

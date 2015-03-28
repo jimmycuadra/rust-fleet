@@ -9,3 +9,4 @@ pub use schema::{Machine, Unit, UnitOption, UnitState, UnitStates};
 mod client;
 mod fleet;
 mod schema;
+mod serialize;
