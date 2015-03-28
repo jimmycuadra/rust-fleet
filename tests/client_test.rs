@@ -1,6 +1,6 @@
-extern crate fleet_client;
+extern crate fleet;
 
-use fleet_client::{Client, UnitOption, UnitStates};
+use fleet::{Client, UnitOption, UnitStates};
 
 #[test]
 fn create_unit() {

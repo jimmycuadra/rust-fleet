@@ -2,18 +2,18 @@ use std::collections::{BTreeMap, HashMap};
 
 use rustc_serialize::json::{self, Json, ToJson};
 
-use fleet::FleetAPI;
+use api::API;
 use schema::{Machine, Unit, UnitOption, UnitState, UnitStates};
 use serialize::{CreateUnit, ModifyUnit};
 
 pub struct Client {
-    fleet: FleetAPI,
+    api: API,
 }
 
 impl Client {
     pub fn new(root_url: &'static str) -> Client {
         Client {
-            fleet: FleetAPI::new(root_url)
+            api: API::new(root_url)
         }
     }
 
@@ -28,22 +28,22 @@ impl Client {
             options: options,
         };
 
-        self.fleet.put_unit(name, &json::encode(&serializer).unwrap())
+        self.api.put_unit(name, &json::encode(&serializer).unwrap())
     }
 
     pub fn destroy_unit(&self, name: &str) -> Result<(), String> {
-        self.fleet.destroy_unit(name)
+        self.api.destroy_unit(name)
     }
 
     pub fn get_unit(&self, name: &str) -> Result<Unit, String> {
-        match self.fleet.get_unit(name) {
+        match self.api.get_unit(name) {
             Ok(json) => Ok(self.unit_from_json(&json)),
             Err(error) => Err(error),
         }
     }
 
     pub fn list_machines(&self) -> Result<Vec<Machine>, String> {
-        match self.fleet.get_machines() {
+        match self.api.get_machines() {
             Ok(units_json) => {
                 Ok(units_json.iter().map(|json| self.machine_from_json(json)).collect())
             },
@@ -66,7 +66,7 @@ impl Client {
             query_pairs.insert("unitName", unit_name.unwrap());
         }
 
-        match self.fleet.get_unit_states(query_pairs) {
+        match self.api.get_unit_states(query_pairs) {
             Ok(unit_states_json) => {
                 Ok(unit_states_json.iter().map(|json| self.unit_state_from_json(json)).collect())
             },
@@ -75,7 +75,7 @@ impl Client {
     }
 
     pub fn list_units(&self) -> Result<Vec<Unit>, String> {
-        match self.fleet.get_units() {
+        match self.api.get_units() {
             Ok(units_json) => Ok(units_json.iter().map(|json| self.unit_from_json(json)).collect()),
             Err(error) => Err(error),
         }
@@ -86,7 +86,7 @@ impl Client {
             desiredState: desired_state.to_json(),
         };
 
-        self.fleet.put_unit(name, &json::encode(&serializer).unwrap())
+        self.api.put_unit(name, &json::encode(&serializer).unwrap())
     }
 
     fn get_metadata_hashmap(&self, json_obj: &BTreeMap<String, Json>) -> HashMap<String, String> {

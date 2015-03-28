@@ -6,13 +6,13 @@ use hyper::header::ContentType;
 use hyper::status::StatusCode;
 use rustc_serialize::json::Json;
 
-pub struct FleetAPI {
+pub struct API {
     root_url: &'static str,
 }
 
-impl FleetAPI {
-    pub fn new(root_url: &'static str) -> FleetAPI {
-        FleetAPI {
+impl API {
+    pub fn new(root_url: &'static str) -> API {
+        API {
             root_url: root_url
         }
     }

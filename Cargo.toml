@@ -1,18 +1,18 @@
 [package]
 
-name = "fleet_client"
-version = "0.0.1"
+name = "fleet"
+version = "0.1.0"
 authors = ["Jimmy Cuadra <jimmy@jimmycuadra.com>"]
 description = "A client library for CoreOS's fleet."
 license = "MIT"
 readme = "README.md"
 keywords = ["fleet", "coreos", "systemd"]
-repository = "https://github.com/jimmycuadra/fleet_client"
-homepage = "https://github.com/jimmycuadra/fleet_client"
+repository = "https://github.com/jimmycuadra/rust-fleet"
+homepage = "https://github.com/jimmycuadra/rust-fleet"
 
 [lib]
 
-name = "fleet_client"
+name = "fleet"
 doctest = false
 
 [dependencies]
