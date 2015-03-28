@@ -22,11 +22,12 @@ impl Client {
         desired_state: UnitStates,
         options: Vec<UnitOption>
     ) -> Result<(), String> {
-        let options_json = json::encode(&options).unwrap();
+        let options_json_string = json::encode(&options).unwrap();
+        let options_json_object = Json::from_str(&options_json_string).unwrap();
         let mut body = HashMap::new();
 
-        body.insert("desiredState", desired_state.to_json());
-        body.insert("options", &options_json);
+        body.insert("desiredState", Json::String(desired_state.to_str().to_string()));
+        body.insert("options", options_json_object);
 
         self.fleet.put_unit(name, &json::encode(&body).unwrap())
     }
@@ -84,7 +85,7 @@ impl Client {
     pub fn modify_unit(&self, name: &'static str, desired_state: UnitStates) -> Result<(), String> {
         let mut body = HashMap::new();
 
-        body.insert("desiredState", desired_state.to_json());
+        body.insert("desiredState", Json::String(desired_state.to_str().to_string()));
 
         self.fleet.put_unit(name, &json::encode(&body).unwrap())
     }

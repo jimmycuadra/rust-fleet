@@ -14,7 +14,7 @@ impl UnitStates {
         }
     }
 
-    pub fn to_json(&self) -> &'static str {
+    pub fn to_str(&self) -> &'static str {
         match *self {
             UnitStates::Inactive => "inactive",
             UnitStates::Loaded => "loaded",
