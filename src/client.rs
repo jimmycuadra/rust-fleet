@@ -161,20 +161,9 @@ impl Client {
 #[cfg(test)]
 mod client_tests {
     use super::Client;
-    use schema::UnitStates;
 
     #[test]
     fn it_can_be_constructed() {
        Client::new("http://localhost");
-    }
-
-    #[test]
-    #[should_panic]
-    fn it_can_create_units() {
-        let client = Client::new("http://it_can_create_units.example.com");
-
-        let result = client.create_unit("example.service", UnitStates::Launched, vec![]);
-
-        assert!(result.is_ok())
     }
 }
