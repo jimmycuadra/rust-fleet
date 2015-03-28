@@ -1,2 +1,4 @@
+.vagrant
 target
+user-data
 Cargo.lock
