@@ -1,22 +1,25 @@
 use std::collections::{BTreeMap, HashMap};
 
+use hyper::Client as HyperClient;
+use hyper::client::{IntoUrl, Response};
+use hyper::header::ContentType;
+use hyper::status::StatusCode;
 use rustc_serialize::json::{self, Json, ToJson};
-use url::ParseError;
+use url::{ParseError, Url};
 
-use api::API;
-use error::FleetError;
+use error::{FleetError, FleetResult};
 use schema::{Machine, Unit, UnitOption, UnitState, UnitStates};
 use serialize::{CreateUnit, ModifyUnit};
 
 pub struct Client {
-    api: API,
+    root_url: String,
 }
 
 impl Client {
     pub fn new(root_url: &str) -> Result<Client, ParseError> {
-        let api = try!(API::new(root_url));
+        let url = try!(Url::parse(root_url));
         let client = Client {
-            api: api
+            root_url: format!("{}{}", url.serialize(), "fleet/v1"),
         };
 
         Ok(client)
@@ -33,26 +36,52 @@ impl Client {
             options: options,
         };
 
-        self.api.put_unit(name, &json::encode(&serializer).unwrap())
+        let url = self.build_url(&format!("/units/{}", name));
+        let body = json::encode(&serializer).unwrap();
+        let mut response = try!(self.put(url, body));
+
+        match response.status {
+            StatusCode::Created | StatusCode::NoContent => Ok(()),
+            _ => Err(FleetError::from_hyper_response(&mut response)),
+        }
     }
 
     pub fn destroy_unit(&self, name: &str) -> Result<(), FleetError> {
-        self.api.destroy_unit(name)
+        let url = self.build_url(&format!("/units/{}", name));
+        let mut response = try!(self.delete(&url[..]));
+
+        match response.status {
+            StatusCode::Ok => Ok(()),
+            _ => Err(FleetError::from_hyper_response(&mut response)),
+        }
     }
 
     pub fn get_unit(&self, name: &str) -> Result<Unit, FleetError> {
-        match self.api.get_unit(name) {
-            Ok(json) => Ok(self.unit_from_json(&json)),
-            Err(error) => Err(error),
+        let url = self.build_url(&format!("/units/{}", name));
+        let mut response = try!(self.get(&url[..]));
+
+        match response.status {
+            StatusCode::Ok => {
+                let json = Json::from_reader(&mut response).unwrap();
+
+                Ok(self.unit_from_json(&json))
+            },
+            _ => Err(FleetError::from_hyper_response(&mut response)),
         }
     }
 
     pub fn list_machines(&self) -> Result<Vec<Machine>, FleetError> {
-        match self.api.get_machines() {
-            Ok(units_json) => {
+        let url = self.build_url(&format!("/machines"));
+        let mut response = try!(self.get(&url[..]));
+
+        match response.status {
+            StatusCode::Ok => {
+                let json = Json::from_reader(&mut response).unwrap();
+                let units_json = json.find("machines").unwrap().as_array().unwrap();
+
                 Ok(units_json.iter().map(|json| self.machine_from_json(json)).collect())
             },
-            Err(error) => Err(error),
+            _ => Err(FleetError::from_hyper_response(&mut response)),
         }
     }
 
@@ -71,18 +100,34 @@ impl Client {
             query_pairs.insert("unitName", unit_name.unwrap());
         }
 
-        match self.api.get_unit_states(query_pairs) {
-            Ok(unit_states_json) => {
+        let base_url = self.build_url("/state");
+        let mut url = Url::parse(&base_url[..]).unwrap();
+        url.set_query_from_pairs(query_pairs.iter().map(|(k, v)| (*k, *v)));
+        let mut response = try!(self.get(url));
+
+        match response.status {
+            StatusCode::Ok => {
+                let json = Json::from_reader(&mut response).unwrap();
+                let unit_states_json = json.find("states").unwrap().as_array().unwrap();
+
                 Ok(unit_states_json.iter().map(|json| self.unit_state_from_json(json)).collect())
             },
-            Err(error) => Err(error),
+            _ => Err(FleetError::from_hyper_response(&mut response)),
         }
     }
 
     pub fn list_units(&self) -> Result<Vec<Unit>, FleetError> {
-        match self.api.get_units() {
-            Ok(units_json) => Ok(units_json.iter().map(|json| self.unit_from_json(json)).collect()),
-            Err(error) => Err(error),
+        let url = self.build_url("/units");
+        let mut response = try!(self.get(&url[..]));
+
+        match response.status {
+            StatusCode::Ok => {
+                let json = Json::from_reader(&mut response).unwrap();
+                let units_json = json.find("units").unwrap().as_array().unwrap();
+
+                Ok(units_json.iter().map(|json| self.unit_from_json(json)).collect())
+            },
+            _ => Err(FleetError::from_hyper_response(&mut response)),
         }
     }
 
@@ -95,7 +140,38 @@ impl Client {
             desiredState: desired_state.to_json(),
         };
 
-        self.api.put_unit(name, &json::encode(&serializer).unwrap())
+        let url = self.build_url(&format!("/units/{}", name));
+        let body = json::encode(&serializer).unwrap();
+        let mut response = try!(self.put(url, body));
+
+        match response.status {
+            StatusCode::Created | StatusCode::NoContent => Ok(()),
+            _ => Err(FleetError::from_hyper_response(&mut response)),
+        }
+    }
+
+    fn build_url(&self, path: &str) -> String {
+        format!("{}{}", self.root_url, path)
+    }
+
+    fn delete(&self, url: &str) -> FleetResult<Response> {
+        let mut client = HyperClient::new();
+        let content_type: ContentType = ContentType("application/json".parse().unwrap());
+
+        match client.delete(url).header(content_type).send() {
+            Ok(response) => Ok(response),
+            Err(error) => Err(FleetError::from_hyper_error(&error)),
+        }
+    }
+
+    fn get<U: IntoUrl>(&self, url: U) -> FleetResult<Response> {
+        let mut client = HyperClient::new();
+        let content_type: ContentType = ContentType("application/json".parse().unwrap());
+
+        match client.get(url).header(content_type).send() {
+            Ok(response) => Ok(response),
+            Err(error) => Err(FleetError::from_hyper_error(&error)),
+        }
     }
 
     fn get_metadata_hashmap(&self, json_obj: &BTreeMap<String, Json>) -> HashMap<String, String> {
@@ -126,6 +202,16 @@ impl Client {
             id: self.get_string_value(machine_obj, "id").to_string(),
             metadata: self.get_metadata_hashmap(machine_obj),
             primary_ip: self.get_string_value(machine_obj, "primaryIP").to_string(),
+        }
+    }
+
+    fn put(&self, url: String, body: String) -> FleetResult<Response> {
+        let mut client = HyperClient::new();
+        let content_type: ContentType = ContentType("application/json".parse().unwrap());
+
+        match client.put(&url[..]).header(content_type).body(&body[..]).send() {
+            Ok(response) => Ok(response),
+            Err(error) => Err(FleetError::from_hyper_error(&error)),
         }
     }
 
