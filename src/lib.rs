@@ -3,6 +3,7 @@
 
 extern crate hyper;
 extern crate rustc_serialize;
+extern crate url;
 
 pub use client::Client;
 pub use error::FleetError;

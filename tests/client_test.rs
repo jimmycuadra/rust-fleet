@@ -4,7 +4,7 @@ use fleet::{Client, UnitOption, UnitStates};
 
 #[test]
 fn create_unit() {
-    let client = Client::new("http://localhost:2999/fleet/v1");
+    let client = Client::new("http://localhost:2999").unwrap();
     let options = vec![
         UnitOption {
             name: "ExecStart".to_string(),
@@ -20,7 +20,7 @@ fn create_unit() {
 
 #[test]
 fn create_invalid_unit_missing_name() {
-    let client = Client::new("http://localhost:2999/fleet/v1");
+    let client = Client::new("http://localhost:2999").unwrap();
     let options = vec![];
 
     let result = client.create_unit("", UnitStates::Launched, options);
@@ -31,7 +31,7 @@ fn create_invalid_unit_missing_name() {
 
 #[test]
 fn create_invalid_unit_missing_options() {
-    let client = Client::new("http://localhost:2999/fleet/v1");
+    let client = Client::new("http://localhost:2999").unwrap();
     let options = vec![];
 
     let result = client.create_unit("optionless.service", UnitStates::Launched, options);

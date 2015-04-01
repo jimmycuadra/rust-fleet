@@ -5,18 +5,23 @@ use hyper::client::{Client, IntoUrl, Response};
 use hyper::header::ContentType;
 use hyper::status::StatusCode;
 use rustc_serialize::json::Json;
+use url::ParseError;
 
 use error::{FleetError, FleetResult};
 
 pub struct API {
-    root_url: &'static str,
+    root_url: String,
 }
 
 impl API {
-    pub fn new(root_url: &'static str) -> API {
-        API {
-            root_url: root_url
-        }
+    pub fn new(root_url: &'static str) -> Result<API, ParseError> {
+        let url = try!(Url::parse(root_url));
+
+        let api = API {
+            root_url: format!("{}{}", url.serialize(), "fleet/v1"),
+        };
+
+        Ok(api)
     }
 
     pub fn destroy_unit(&self, name: &str) -> FleetResult<()> {

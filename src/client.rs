@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, HashMap};
 
 use rustc_serialize::json::{self, Json, ToJson};
+use url::ParseError;
 
 use api::API;
 use error::FleetError;
@@ -12,10 +13,13 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn new(root_url: &'static str) -> Client {
-        Client {
-            api: API::new(root_url)
-        }
+    pub fn new(root_url: &'static str) -> Result<Client, ParseError> {
+        let api = try!(API::new(root_url));
+        let client = Client {
+            api: api
+        };
+
+        Ok(client)
     }
 
     pub fn create_unit(
@@ -169,6 +173,11 @@ mod client_tests {
 
     #[test]
     fn it_can_be_constructed() {
-       Client::new("http://localhost");
+       Client::new("http://localhost").unwrap();
+    }
+
+    #[test]
+    fn it_returns_an_error_for_invalid_root_urls() {
+        assert!(Client::new("asdf").is_err());
     }
 }
