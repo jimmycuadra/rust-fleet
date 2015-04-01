@@ -7,7 +7,6 @@ A Rust client library for [fleet](https://github.com/coreos/fleet). Not totally 
 The test suite includes integration tests that assume the fleet API to be running on localhost:2999. A Vagrant environment for this is provided. Simply follow these steps:
 
 1. Install Vagrant.
-1. `cp user-data.sample user-data`
 1. `vagrant up`
 1. `vagrant ssh`
 1. `cd share`
