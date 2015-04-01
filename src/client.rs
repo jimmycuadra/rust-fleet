@@ -13,7 +13,7 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn new(root_url: &'static str) -> Result<Client, ParseError> {
+    pub fn new(root_url: &str) -> Result<Client, ParseError> {
         let api = try!(API::new(root_url));
         let client = Client {
             api: api
@@ -24,7 +24,7 @@ impl Client {
 
     pub fn create_unit(
         &self,
-        name: &'static str,
+        name: &str,
         desired_state: UnitStates,
         options: Vec<UnitOption>
     ) -> Result<(), FleetError> {
@@ -88,7 +88,7 @@ impl Client {
 
     pub fn modify_unit(
         &self,
-        name: &'static str,
+        name: &str,
         desired_state: UnitStates
     ) -> Result<(), FleetError> {
         let serializer = ModifyUnit {

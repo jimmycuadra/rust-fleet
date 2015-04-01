@@ -14,7 +14,7 @@ pub struct API {
 }
 
 impl API {
-    pub fn new(root_url: &'static str) -> Result<API, ParseError> {
+    pub fn new(root_url: &str) -> Result<API, ParseError> {
         let url = try!(Url::parse(root_url));
 
         let api = API {
@@ -87,7 +87,7 @@ impl API {
         }
     }
 
-    pub fn put_unit(&self, name: &'static str, body: &str) -> FleetResult<()> {
+    pub fn put_unit(&self, name: &str, body: &str) -> FleetResult<()> {
         let url = &self.url(&format!("/units/{}", name))[..];
         let mut response = try!(self.put(url, body));
 
