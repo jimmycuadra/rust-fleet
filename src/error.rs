@@ -45,8 +45,14 @@ fn extract_message(response: &mut Response) -> Option<String> {
        Ok(json) => {
            match json.find_path(&["error", "message"]) {
                Some(message_json) => match message_json.as_string() {
-                   Some(message) => Some(message.to_string()),
-                   None => None,
+                   Some(message) => {
+                       if message.len() == 0 {
+                           Some("Error in JSON response from Fleet was empty".to_string())
+                       } else {
+                           Some(message.to_string())
+                       }
+                   },
+                   None => Some("Error in JSON response from Fleet was empty".to_string()),
                },
                None => Some("Error parsing JSON response from Fleet".to_string()),
            }
