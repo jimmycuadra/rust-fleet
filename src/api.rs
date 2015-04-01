@@ -6,6 +6,8 @@ use hyper::header::ContentType;
 use hyper::status::StatusCode;
 use rustc_serialize::json::Json;
 
+use error::{FleetError, FleetResult};
+
 pub struct API {
     root_url: &'static str,
 }
@@ -17,103 +19,108 @@ impl API {
         }
     }
 
-    pub fn destroy_unit(&self, name: &str) -> Result<(), String> {
+    pub fn destroy_unit(&self, name: &str) -> FleetResult<()> {
         let url = &self.url(&format!("/units/{}", name))[..];
-        let response = self.delete(url);
+        let mut response = try!(self.delete(url));
 
         match response.status {
             StatusCode::Ok => Ok(()),
-            StatusCode::NotFound => Err("Unit not found".to_string()),
-            status_code => Err(format!("Unexpected response: {}", status_code)),
+            _ => Err(FleetError::from_hyper_response(&mut response)),
         }
     }
 
-    pub fn get_machines(&self) -> Result<Vec<Json>, String> {
+    pub fn get_machines(&self) -> FleetResult<Vec<Json>> {
         let url = &self.url("/machines")[..];
-        let mut response = self.get(url);
+        let mut response = try!(self.get(url));
 
         match response.status {
             StatusCode::Ok => {
                 let json = Json::from_reader(&mut response).unwrap();
                 Ok(json.find("machines").unwrap().as_array().unwrap().clone())
             },
-            status_code => Err(format!("Unexpected response: {}", status_code)),
+            _ => Err(FleetError::from_hyper_response(&mut response)),
         }
     }
 
-    pub fn get_unit(&self, name: &str) -> Result<Json, String> {
+    pub fn get_unit(&self, name: &str) -> FleetResult<Json> {
         let url = &self.url(&format!("/units/{}", name))[..];
-        let mut response = self.get(url);
+        let mut response = try!(self.get(url));
 
         match response.status {
             StatusCode::Ok => {
                 Ok(Json::from_reader(&mut response).unwrap())
             },
-            StatusCode::NotFound => Err("Unit not found".to_string()),
-            status_code => Err(format!("Unexpected response: {}", status_code)),
+            _ => Err(FleetError::from_hyper_response(&mut response)),
         }
     }
 
-    pub fn get_unit_states(&self, query_pairs: HashMap<&str, &str>) -> Result<Vec<Json>, String> {
+    pub fn get_unit_states(&self, query_pairs: HashMap<&str, &str>) -> FleetResult<Vec<Json>> {
         let base_url = &self.url("/state")[..];
         let mut url = Url::parse(base_url).unwrap();
         url.set_query_from_pairs(query_pairs.iter().map(|(k, v)| (*k, *v)));
-        let mut response = self.get(url);
+        let mut response = try!(self.get(url));
 
         match response.status {
             StatusCode::Ok => {
                 let json = Json::from_reader(&mut response).unwrap();
                 Ok(json.find("states").unwrap().as_array().unwrap().clone())
             },
-            status_code => Err(format!("Unexpected response: {}", status_code)),
+            _ => Err(FleetError::from_hyper_response(&mut response)),
         }
     }
 
-    pub fn get_units(&self) -> Result<Vec<Json>, String> {
+    pub fn get_units(&self) -> FleetResult<Vec<Json>> {
         let url = &self.url("/units")[..];
-        let mut response = self.get(url);
+        let mut response = try!(self.get(url));
 
         match response.status {
             StatusCode::Ok => {
                 let json = Json::from_reader(&mut response).unwrap();
                 Ok(json.find("units").unwrap().as_array().unwrap().clone())
             },
-            status_code => Err(format!("Unexpected response: {}", status_code)),
+            _ => Err(FleetError::from_hyper_response(&mut response)),
         }
     }
 
-    pub fn put_unit(&self, name: &'static str, body: &str) -> Result<(), String> {
+    pub fn put_unit(&self, name: &'static str, body: &str) -> FleetResult<()> {
         let url = &self.url(&format!("/units/{}", name))[..];
-        let response = self.put(url, body);
+        let mut response = try!(self.put(url, body));
 
         match response.status {
             StatusCode::Created => Ok(()),
             StatusCode::NoContent => Ok(()),
-            StatusCode::Conflict => Err("UnitOptions are required".to_string()),
-            StatusCode::BadRequest => Err("Invalid unit".to_string()),
-            status_code => Err(format!("Unexpected response: {}", status_code))
+            _ => Err(FleetError::from_hyper_response(&mut response)),
         }
     }
 
-    fn delete(&self, url: &str) -> Response {
+    fn delete(&self, url: &str) -> FleetResult<Response> {
         let mut client = Client::new();
         let content_type: ContentType = ContentType("application/json".parse().unwrap());
 
-        client.delete(url).header(content_type).send().unwrap()
+        match client.delete(url).header(content_type).send() {
+            Ok(response) => Ok(response),
+            Err(error) => Err(FleetError::from_hyper_error(&error)),
+        }
     }
 
-    fn get<U: IntoUrl>(&self, url: U) -> Response {
+    fn get<U: IntoUrl>(&self, url: U) -> FleetResult<Response> {
         let mut client = Client::new();
         let content_type: ContentType = ContentType("application/json".parse().unwrap());
 
-        client.get(url).header(content_type).send().unwrap()
+        match client.get(url).header(content_type).send() {
+            Ok(response) => Ok(response),
+            Err(error) => Err(FleetError::from_hyper_error(&error)),
+        }
     }
 
-    fn put(&self, url: &str, body: &str) -> Response {
+    fn put(&self, url: &str, body: &str) -> FleetResult<Response> {
         let mut client = Client::new();
         let content_type: ContentType = ContentType("application/json".parse().unwrap());
 
-        client.put(url).header(content_type).body(body).send().unwrap()
+        match client.put(url).header(content_type).body(body).send() {
+            Ok(response) => Ok(response),
+            Err(error) => Err(FleetError::from_hyper_error(&error)),
+        }
     }
 
     fn url(&self, path: &str) -> String {

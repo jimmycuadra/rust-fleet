@@ -3,6 +3,7 @@ use std::collections::{BTreeMap, HashMap};
 use rustc_serialize::json::{self, Json, ToJson};
 
 use api::API;
+use error::FleetError;
 use schema::{Machine, Unit, UnitOption, UnitState, UnitStates};
 use serialize::{CreateUnit, ModifyUnit};
 
@@ -22,7 +23,7 @@ impl Client {
         name: &'static str,
         desired_state: UnitStates,
         options: Vec<UnitOption>
-    ) -> Result<(), String> {
+    ) -> Result<(), FleetError> {
         let serializer = CreateUnit {
             desiredState: desired_state.to_json(),
             options: options,
@@ -31,18 +32,18 @@ impl Client {
         self.api.put_unit(name, &json::encode(&serializer).unwrap())
     }
 
-    pub fn destroy_unit(&self, name: &str) -> Result<(), String> {
+    pub fn destroy_unit(&self, name: &str) -> Result<(), FleetError> {
         self.api.destroy_unit(name)
     }
 
-    pub fn get_unit(&self, name: &str) -> Result<Unit, String> {
+    pub fn get_unit(&self, name: &str) -> Result<Unit, FleetError> {
         match self.api.get_unit(name) {
             Ok(json) => Ok(self.unit_from_json(&json)),
             Err(error) => Err(error),
         }
     }
 
-    pub fn list_machines(&self) -> Result<Vec<Machine>, String> {
+    pub fn list_machines(&self) -> Result<Vec<Machine>, FleetError> {
         match self.api.get_machines() {
             Ok(units_json) => {
                 Ok(units_json.iter().map(|json| self.machine_from_json(json)).collect())
@@ -55,7 +56,7 @@ impl Client {
         &self,
         machine_id: Option<&str>,
         unit_name: Option<&str>
-    ) -> Result<Vec<UnitState>, String> {
+    ) -> Result<Vec<UnitState>, FleetError> {
         let mut query_pairs = HashMap::new();
 
         if machine_id.is_some() {
@@ -74,14 +75,18 @@ impl Client {
         }
     }
 
-    pub fn list_units(&self) -> Result<Vec<Unit>, String> {
+    pub fn list_units(&self) -> Result<Vec<Unit>, FleetError> {
         match self.api.get_units() {
             Ok(units_json) => Ok(units_json.iter().map(|json| self.unit_from_json(json)).collect()),
             Err(error) => Err(error),
         }
     }
 
-    pub fn modify_unit(&self, name: &'static str, desired_state: UnitStates) -> Result<(), String> {
+    pub fn modify_unit(
+        &self,
+        name: &'static str,
+        desired_state: UnitStates
+    ) -> Result<(), FleetError> {
         let serializer = ModifyUnit {
             desiredState: desired_state.to_json(),
         };
