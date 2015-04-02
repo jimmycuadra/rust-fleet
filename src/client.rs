@@ -51,7 +51,7 @@ impl Client {
         let mut response = try!(self.delete(&url[..]));
 
         match response.status {
-            StatusCode::Ok => Ok(()),
+            StatusCode::NoContent => Ok(()),
             _ => Err(FleetError::from_hyper_response(&mut response)),
         }
     }

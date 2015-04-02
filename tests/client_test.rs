@@ -3,7 +3,7 @@ extern crate fleet;
 use fleet::{Client, UnitOption, UnitStates};
 
 #[test]
-fn create_unit() {
+fn create_modify_destroy_unit() {
     let client = Client::new("http://localhost:2999").unwrap();
     let options = vec![
         UnitOption {
@@ -13,9 +13,17 @@ fn create_unit() {
         },
     ];
 
-    let result = client.create_unit("test.service", UnitStates::Launched, options);
+    let create_result = client.create_unit("test.service", UnitStates::Launched, options);
 
-    assert!(result.is_ok(), "{}", result.err().unwrap());
+    assert!(create_result.is_ok(), "{}", create_result.err().unwrap());
+
+    let modify_result = client.modify_unit("test.service", UnitStates::Loaded);
+
+    assert!(modify_result.is_ok(), "{}", modify_result.err().unwrap());
+
+    let destroy_result = client.destroy_unit("test.service");
+
+    assert!(destroy_result.is_ok(), "{}", destroy_result.err().unwrap());
 }
 
 #[test]
