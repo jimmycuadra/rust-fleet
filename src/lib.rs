@@ -1,5 +1,4 @@
 #![allow(dead_code)]
-#![feature(core)]
 
 extern crate hyper;
 extern crate rustc_serialize;

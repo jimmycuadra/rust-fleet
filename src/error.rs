@@ -1,6 +1,5 @@
 use std::error::Error;
 use std::fmt;
-use std::num::ToPrimitive;
 
 use hyper::client::Response;
 use hyper::error::HttpError;
@@ -23,7 +22,7 @@ impl FleetError {
 
     pub fn from_hyper_response(response: &mut Response) -> FleetError {
         FleetError {
-            code: response.status.to_u16(),
+            code: Some(response.status.to_u16()),
             message: extract_message(response),
         }
     }
