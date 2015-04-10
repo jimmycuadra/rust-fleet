@@ -39,7 +39,7 @@ pub struct UnitOption {
 pub struct Unit {
     pub current_state: UnitStates,
     pub desired_state: UnitStates,
-    pub machine_id: String,
+    pub machine_id: Option<String>,
     pub name: String,
     pub options: Vec<UnitOption>,
 }
@@ -52,7 +52,7 @@ pub struct UnitPage {
 pub struct UnitState {
     pub name: String,
     pub hash: String,
-    pub machine_id: String,
+    pub machine_id: Option<String>,
     pub systemd_load_state: String,
     pub systemd_active_state: String,
     pub systemd_sub_state: String,
@@ -78,7 +78,7 @@ mod unit_tests {
         Unit {
             current_state: UnitStates::Inactive,
             desired_state: UnitStates::Launched,
-            machine_id: "abc123".to_string(),
+            machine_id: Some("abc123".to_string()),
             name: "example.service".to_string(),
             options: vec![unit_option],
         };
@@ -94,7 +94,7 @@ mod unit_page_tests {
         let unit = Unit {
             current_state: UnitStates::Inactive,
             desired_state: UnitStates::Launched,
-            machine_id: "abc123".to_string(),
+            machine_id: Some("abc123".to_string()),
             name: "example.service".to_string(),
             options: vec![],
         };
@@ -110,7 +110,7 @@ mod unit_page_tests {
         let unit = Unit {
             current_state: UnitStates::Inactive,
             desired_state: UnitStates::Launched,
-            machine_id: "abc123".to_string(),
+            machine_id: Some("abc123".to_string()),
             name: "example.service".to_string(),
             options: vec![],
         };
@@ -131,7 +131,7 @@ mod unit_state_tests {
         UnitState {
             name: "example.service".to_string(),
             hash: "abc123".to_string(),
-            machine_id: "123abc".to_string(),
+            machine_id: Some("123abc".to_string()),
             systemd_load_state: "loaded".to_string(),
             systemd_active_state: "active".to_string(),
             systemd_sub_state: "running".to_string(),
@@ -147,7 +147,7 @@ mod unit_state_page_tests {
         let unit_state = UnitState {
             name: "example.service".to_string(),
             hash: "abc123".to_string(),
-            machine_id: "123abc".to_string(),
+            machine_id: Some("123abc".to_string()),
             systemd_load_state: "loaded".to_string(),
             systemd_active_state: "active".to_string(),
             systemd_sub_state: "running".to_string(),
@@ -163,7 +163,7 @@ mod unit_state_page_tests {
         let unit_state = UnitState {
             name: "example.service".to_string(),
             hash: "abc123".to_string(),
-            machine_id: "123abc".to_string(),
+            machine_id: Some("123abc".to_string()),
             systemd_load_state: "loaded".to_string(),
             systemd_active_state: "active".to_string(),
             systemd_sub_state: "running".to_string(),
