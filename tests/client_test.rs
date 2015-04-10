@@ -48,6 +48,13 @@ fn unit_lifecycle() {
 
     assert!(modify_result.is_ok(), "{}", modify_result.err().unwrap());
 
+    // List units
+
+    let units = client.list_units().ok().unwrap();
+
+    assert_eq!(units.len(), 1);
+    assert_eq!(units[0].name, "test.service");
+
     // Destroy unit
 
     let destroy_result = client.destroy_unit("test.service");
