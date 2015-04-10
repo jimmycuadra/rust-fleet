@@ -1,5 +1,7 @@
 extern crate fleet;
 
+use std::thread::sleep_ms;
+
 use fleet::{Client, UnitOption, UnitStates};
 
 #[test]
@@ -22,9 +24,23 @@ fn unit_lifecycle() {
 
     // Get unit
 
-    let unit = client.get_unit("test.service").ok().unwrap();
+    // fleet takes a second to create the unit, so give it a few tries.
+    for try in 0..5 {
+        let unit = client.get_unit("test.service").ok().unwrap();
 
-    assert_eq!(&unit.name[..], "test.service");
+        assert_eq!(&unit.name[..], "test.service");
+
+        match unit.machine_id {
+            Some(_) => break,
+            None => {
+                if try == 4 {
+                    panic!("test.service never launched");
+                } else {
+                    sleep_ms(500);
+                }
+            }
+        }
+    }
 
     // Modify unit's desired state
 
