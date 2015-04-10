@@ -10,7 +10,7 @@ The test suite includes integration tests that assume the fleet API to be runnin
 1. `vagrant up`
 1. `vagrant ssh`
 1. `cd share`
-1. `docker run -it --rm -v $(pwd):/source --net host schickling/rust`
+1. `docker run -it --rm -v $(pwd):/source --net host jimmycuadra/rust`
 1. `cargo test`
 
 # License
