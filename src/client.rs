@@ -77,9 +77,18 @@ impl Client {
         match response.status {
             StatusCode::Ok => {
                 let json = Json::from_reader(&mut response).unwrap();
-                let units_json = json.find("machines").unwrap().as_array().unwrap();
 
-                Ok(units_json.iter().map(|json| serialize::machine_from_json(json)).collect())
+                match json.find("machines") {
+                    Some(machines_json) => {
+                        let machines = machines_json.as_array().unwrap();
+
+                        Ok(machines.iter().map(|json| {
+                            serialize::machine_from_json(json)
+                        }).collect())
+                    },
+                    None => Ok(vec![]),
+                }
+
             },
             _ => Err(FleetError::from_hyper_response(&mut response)),
         }
