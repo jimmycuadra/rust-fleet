@@ -53,7 +53,31 @@ fn unit_lifecycle() {
     let units = client.list_units().ok().unwrap();
 
     assert_eq!(units.len(), 1);
-    assert_eq!(units[0].name, "test.service");
+
+    let listed_unit = &units[0];
+
+    assert_eq!(listed_unit.name, "test.service");
+
+    // List unit states
+
+    // for some reason GET /state sometimes returns no results even when there should be
+    for try in 0..5 {
+        let unit_states = client.list_unit_states(None, None).ok().unwrap();
+
+        if unit_states.len() > 0 {
+            let unit_state = &unit_states[0];
+
+            assert_eq!(unit_state.name, "test.service");
+            assert_eq!(unit_state.machine_id, listed_unit.machine_id);
+            assert_eq!(unit_state.systemd_load_state, "loaded");
+            assert_eq!(unit_state.systemd_active_state, "inactive");
+            assert_eq!(unit_state.systemd_sub_state, "dead");
+        } else if try == 4{
+            panic!("no unit states were returned");
+        } else {
+            sleep_ms(500);
+        }
+    }
 
     // Destroy unit
 

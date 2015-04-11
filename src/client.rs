@@ -108,11 +108,17 @@ impl Client {
         match response.status {
             StatusCode::Ok => {
                 let json = Json::from_reader(&mut response).unwrap();
-                let unit_states_json = json.find("states").unwrap().as_array().unwrap();
 
-                Ok(unit_states_json.iter().map(|json| {
-                    serialize::unit_state_from_json(json)
-                }).collect())
+                match json.find("states") {
+                    Some(unit_states_json) => {
+                        let unit_states = unit_states_json.as_array().unwrap();
+
+                        Ok(unit_states.iter().map(|json| {
+                            serialize::unit_state_from_json(json)
+                        }).collect())
+                    },
+                    None => Ok(vec![]),
+                }
             },
             _ => Err(FleetError::from_hyper_response(&mut response)),
         }
