@@ -107,3 +107,12 @@ fn create_invalid_unit_missing_options() {
 
     assert_eq!(format!("{}", error), "409: unit does not exist and options field empty");
 }
+
+#[test]
+fn list_machines() {
+    let client = Client::new("http://localhost:2999").unwrap();
+
+    let machines = client.list_machines().ok().unwrap();
+
+    assert_eq!(machines.len(), 1);
+}
