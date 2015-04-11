@@ -1,6 +1,7 @@
 extern crate fleet;
+extern crate retry;
 
-use std::thread::sleep_ms;
+use retry::retry;
 
 use fleet::{Client, UnitOption, UnitStates};
 
@@ -25,22 +26,13 @@ fn unit_lifecycle() {
     // Get unit
 
     // fleet takes a second to create the unit, so give it a few tries.
-    for try in 0..5 {
-        let unit = client.get_unit("test.service").ok().unwrap();
+    let unit = retry(5, 500, || {
+        client.get_unit("test.service").ok().unwrap()
+    }, |unit| {
+        unit.machine_id.is_some()
+    }).ok().unwrap();
 
-        assert_eq!(&unit.name[..], "test.service");
-
-        match unit.machine_id {
-            Some(_) => break,
-            None => {
-                if try == 4 {
-                    panic!("test.service never launched");
-                } else {
-                    sleep_ms(500);
-                }
-            }
-        }
-    }
+    assert_eq!(&unit.name[..], "test.service");
 
     // Modify unit's desired state
 
@@ -61,23 +53,19 @@ fn unit_lifecycle() {
     // List unit states
 
     // for some reason GET /state sometimes returns no results even when there should be
-    for try in 0..5 {
-        let unit_states = client.list_unit_states(None, None).ok().unwrap();
+    let unit_states = retry(5, 500, || {
+        client.list_unit_states(None, None).ok().unwrap()
+    }, |unit_states| {
+        unit_states.len() > 0
+    }).ok().unwrap();
 
-        if unit_states.len() > 0 {
-            let unit_state = &unit_states[0];
+    let unit_state = &unit_states[0];
 
-            assert_eq!(unit_state.name, "test.service");
-            assert_eq!(unit_state.machine_id, listed_unit.machine_id);
-            assert_eq!(unit_state.systemd_load_state, "loaded");
-            assert_eq!(unit_state.systemd_active_state, "inactive");
-            assert_eq!(unit_state.systemd_sub_state, "dead");
-        } else if try == 4{
-            panic!("no unit states were returned");
-        } else {
-            sleep_ms(500);
-        }
-    }
+    assert_eq!(unit_state.name, "test.service");
+    assert_eq!(unit_state.machine_id, listed_unit.machine_id);
+    assert_eq!(unit_state.systemd_load_state, "loaded");
+    assert_eq!(unit_state.systemd_active_state, "inactive");
+    assert_eq!(unit_state.systemd_sub_state, "dead");
 
     // Destroy unit
 
