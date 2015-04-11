@@ -1,6 +1,10 @@
 # fleet
 
-A Rust client library for [fleet](https://github.com/coreos/fleet). Not totally working yet, so hold off for now.
+A Rust client library for [fleet](https://github.com/coreos/fleet).
+
+## Known issues:
+
+* Paginated resources are currently not handled. (Only the first page is returned.)
 
 ## Running the tests
 
