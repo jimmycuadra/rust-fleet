@@ -1,12 +1,19 @@
-#![allow(dead_code)]
-
 extern crate hyper;
 extern crate rustc_serialize;
 extern crate url;
 
 pub use client::Client;
 pub use error::FleetError;
-pub use schema::{Machine, Unit, UnitOption, UnitState, UnitStates};
+pub use schema::{
+    Machine,
+    MachinePage,
+    Unit,
+    UnitOption,
+    UnitPage,
+    UnitState,
+    UnitStatePage,
+    UnitStates
+};
 
 mod client;
 mod error;
