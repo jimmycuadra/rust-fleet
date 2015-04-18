@@ -59,8 +59,8 @@ pub struct UnitState {
 }
 
 pub struct UnitStatePage {
-    states: Vec<UnitState>,
-    next_page_token: Option<String>,
+    pub states: Vec<UnitState>,
+    pub next_page_token: Option<String>,
 }
 
 #[cfg(test)]
