@@ -10,11 +10,6 @@ keywords = ["fleet", "coreos", "systemd"]
 repository = "https://github.com/jimmycuadra/rust-fleet"
 homepage = "https://github.com/jimmycuadra/rust-fleet"
 
-[lib]
-
-name = "fleet"
-doctest = false
-
 [dependencies]
 
 hyper = ">= 0.3.4"

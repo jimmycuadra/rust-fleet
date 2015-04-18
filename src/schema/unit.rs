@@ -171,6 +171,7 @@ mod unit_state_tests {
 mod unit_state_page_tests {
     use super::{UnitState, UnitStatePage};
 
+    #[test]
     fn it_can_be_paginated() {
         let unit_state = UnitState {
             name: "example.service".to_string(),
@@ -187,6 +188,7 @@ mod unit_state_page_tests {
         };
     }
 
+    #[test]
     fn it_can_have_no_additional_pages() {
         let unit_state = UnitState {
             name: "example.service".to_string(),

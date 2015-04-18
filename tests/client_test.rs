@@ -42,24 +42,24 @@ fn unit_lifecycle() {
 
     // List units
 
-    let units = client.list_units().ok().unwrap();
+    let unit_pages = client.list_units().ok().unwrap();
 
-    assert_eq!(units.len(), 1);
+    assert_eq!(unit_pages.units.len(), 1);
 
-    let listed_unit = &units[0];
+    let listed_unit = &unit_pages.units[0];
 
     assert_eq!(listed_unit.name, "test.service");
 
     // List unit states
 
     // for some reason GET /state sometimes returns no results even when there should be
-    let unit_states = retry(5, 500, || {
+    let unit_state_pages = retry(5, 500, || {
         client.list_unit_states(None, None).ok().unwrap()
-    }, |unit_states| {
-        unit_states.len() > 0
+    }, |unit_state_pages| {
+        unit_state_pages.states.len() > 0
     }).ok().unwrap();
 
-    let unit_state = &unit_states[0];
+    let unit_state = &unit_state_pages.states[0];
 
     assert_eq!(unit_state.name, "test.service");
     assert_eq!(unit_state.machine_id, listed_unit.machine_id);
@@ -100,7 +100,7 @@ fn create_invalid_unit_missing_options() {
 fn list_machines() {
     let client = Client::new("http://localhost:2999").unwrap();
 
-    let machines = client.list_machines().ok().unwrap();
+    let machine_pages = client.list_machines().ok().unwrap();
 
-    assert_eq!(machines.len(), 1);
+    assert_eq!(machine_pages.machines.len(), 1);
 }
