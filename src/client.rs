@@ -8,7 +8,7 @@ use rustc_serialize::json::{self, Json, ToJson};
 use url::{ParseError, Url};
 
 use error::{FleetError, FleetResult};
-use schema::{Machine, Unit, UnitOption, UnitState, UnitStates};
+use schema::{MachinePage, Unit, UnitOption, UnitState, UnitStates};
 use serialize::{self, CreateUnit, ModifyUnit};
 
 pub struct Client {
@@ -70,7 +70,7 @@ impl Client {
         }
     }
 
-    pub fn list_machines(&self) -> Result<Vec<Machine>, FleetError> {
+    pub fn list_machines(&self) -> Result<MachinePage, FleetError> {
         let url = self.build_url(&format!("/machines"));
         let mut response = try!(self.get(&url[..]));
 
@@ -78,17 +78,21 @@ impl Client {
             StatusCode::Ok => {
                 let json = Json::from_reader(&mut response).unwrap();
 
-                match json.find("machines") {
+                let machines = match json.find("machines") {
                     Some(machines_json) => {
                         let machines = machines_json.as_array().unwrap();
 
-                        Ok(machines.iter().map(|json| {
+                        machines.iter().map(|json| {
                             serialize::machine_from_json(json)
-                        }).collect())
+                        }).collect()
                     },
-                    None => Ok(vec![]),
-                }
+                    None => vec![],
+                };
 
+                Ok(MachinePage {
+                    machines: machines,
+                    next_page_token: self.get_next_page_token(&json),
+                })
             },
             _ => Err(FleetError::from_hyper_response(&mut response)),
         }
@@ -190,6 +194,16 @@ impl Client {
         match client.get(url).header(content_type).send() {
             Ok(response) => Ok(response),
             Err(error) => Err(FleetError::from_hyper_error(&error)),
+        }
+    }
+
+    fn get_next_page_token(&self, json: &Json) -> Option<String> {
+        match json.find("nextPageToken") {
+            Some(next_page_token_json) => match next_page_token_json.as_string() {
+                Some(next_page_token) => Some(next_page_token.to_string()),
+                None => None,
+            },
+            None => None,
         }
     }
 

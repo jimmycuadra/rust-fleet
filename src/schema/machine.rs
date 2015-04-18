@@ -7,8 +7,8 @@ pub struct Machine {
 }
 
 pub struct MachinePage {
-    machines: Vec<Machine>,
-    next_page_token: Option<String>,
+    pub machines: Vec<Machine>,
+    pub next_page_token: Option<String>,
 }
 
 #[cfg(test)]
