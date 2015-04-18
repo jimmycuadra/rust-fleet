@@ -7,7 +7,7 @@ use hyper::status::StatusCode;
 use rustc_serialize::json::{self, Json, ToJson};
 use url::{ParseError, Url};
 
-use error::{FleetError, FleetResult};
+use error::FleetError;
 use schema::{MachinePage, Unit, UnitOption, UnitPage, UnitStatePage, UnitStates};
 use serialize::{self, CreateUnit, ModifyUnit};
 
@@ -186,7 +186,7 @@ impl Client {
         format!("{}{}", self.root_url, path)
     }
 
-    fn delete(&self, url: &str) -> FleetResult<Response> {
+    fn delete(&self, url: &str) -> Result<Response, FleetError> {
         let mut client = HyperClient::new();
         let content_type: ContentType = ContentType("application/json".parse().unwrap());
 
@@ -196,7 +196,7 @@ impl Client {
         }
     }
 
-    fn get<U: IntoUrl>(&self, url: U) -> FleetResult<Response> {
+    fn get<U: IntoUrl>(&self, url: U) -> Result<Response, FleetError> {
         let mut client = HyperClient::new();
         let content_type: ContentType = ContentType("application/json".parse().unwrap());
 
@@ -216,7 +216,7 @@ impl Client {
         }
     }
 
-    fn put(&self, url: String, body: String) -> FleetResult<Response> {
+    fn put(&self, url: String, body: String) -> Result<Response, FleetError> {
         let mut client = HyperClient::new();
         let content_type: ContentType = ContentType("application/json".parse().unwrap());
 

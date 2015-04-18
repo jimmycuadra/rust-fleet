@@ -5,8 +5,6 @@ use hyper::client::Response;
 use hyper::error::HttpError;
 use rustc_serialize::json::Json;
 
-pub type FleetResult<T> = Result<T, FleetError>;
-
 pub struct FleetError {
     code: Option<u16>,
     message: Option<String>,
