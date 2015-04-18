@@ -8,7 +8,7 @@ use rustc_serialize::json::{self, Json, ToJson};
 use url::{ParseError, Url};
 
 use error::{FleetError, FleetResult};
-use schema::{MachinePage, Unit, UnitOption, UnitStatePage, UnitStates};
+use schema::{MachinePage, Unit, UnitOption, UnitPage, UnitStatePage, UnitStates};
 use serialize::{self, CreateUnit, ModifyUnit};
 
 pub struct Client {
@@ -142,7 +142,7 @@ impl Client {
         }
     }
 
-    pub fn list_units(&self) -> Result<Vec<Unit>, FleetError> {
+    pub fn list_units(&self) -> Result<UnitPage, FleetError> {
         let url = self.build_url("/units");
         let mut response = try!(self.get(&url[..]));
 
@@ -150,8 +150,12 @@ impl Client {
             StatusCode::Ok => {
                 let json = Json::from_reader(&mut response).unwrap();
                 let units_json = json.find("units").unwrap().as_array().unwrap();
+                let units = units_json.iter().map(|json| serialize::unit_from_json(json)).collect();
 
-                Ok(units_json.iter().map(|json| serialize::unit_from_json(json)).collect())
+                Ok(UnitPage {
+                    units: units,
+                    next_page_token: self.get_next_page_token(&json),
+                })
             },
             _ => Err(FleetError::from_hyper_response(&mut response)),
         }

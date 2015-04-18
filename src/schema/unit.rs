@@ -45,8 +45,8 @@ pub struct Unit {
 }
 
 pub struct UnitPage {
-    units: Vec<Unit>,
-    next_page_token: Option<String>,
+    pub units: Vec<Unit>,
+    pub next_page_token: Option<String>,
 }
 
 pub struct UnitState {
