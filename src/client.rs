@@ -11,11 +11,59 @@ use error::FleetError;
 use schema::{MachinePage, Unit, UnitOption, UnitPage, UnitStatePage, UnitStates};
 use serialize::{self, CreateUnit, ModifyUnit};
 
+/// An API client for fleet.
+///
+/// # Examples
+///
+/// ```
+/// extern crate fleet;
+///
+/// use fleet::Client;
+///
+/// let client = Client::new("http://localhost:2999");
+///
+/// match client.list_units() {
+///     Ok(unit_page) => {
+///         for unit in unit_page.units {
+///             println!("{}", unit.name);
+///         }
+///     },
+///     None => println!("No units in fleet!"),
+/// };
 pub struct Client {
     root_url: String,
 }
 
 impl Client {
+    /// Constructs a new `Client`.
+    ///
+    /// `root_url` is a network scheme, hostname or IP address, and optional port where fleetd is
+    /// running. This value should not include a path.
+    ///
+    /// Due to limitations in underlying libraries, Unix domain sockets are not yet supported. On
+    /// CoreOS, fleet runs only on a Unix domain socket by default. It can be exposed on a TCP port
+    /// by including a systemd drop-in for the `fleet.socket` unit. This can be achieved via
+    /// cloud-config by overriding the default `fleet.socket` unit.
+    ///
+    /// ```yaml
+    /// #cloud-config
+    ///
+    /// ---
+    /// coreos:
+    ///   units:
+    ///     -  name: fleet.socket
+    ///        command: start
+    ///        drop_ins:
+    ///        -  name: 30-ListenStream.conf
+    ///           content: |
+    ///             [Socket]
+    ///             ListenStream=2999
+    /// ```
+    ///
+    /// # Failures
+    ///
+    /// If the value provided for `root_url` cannot be parsed, a `url::ParseError` will be
+    /// returned.
     pub fn new(root_url: &str) -> Result<Client, ParseError> {
         let url = try!(Url::parse(root_url));
         let client = Client {
@@ -25,6 +73,32 @@ impl Client {
         Ok(client)
     }
 
+    /// Creates a fleet unit.
+    ///
+    /// A unit consists of a name, the desired runtime state, and a set of unit options which
+    /// comprise the unit's unit file.
+    ///
+    /// # Failures
+    ///
+    /// Returns a `FleetError` if there is a problem with the HTTP request to the API or the API
+    /// itself returns an error.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # extern create fleet;
+    /// # use fleet::{Client, UnitOption};
+    /// # let client = Client::new("http://localhost:2999").unwrap();
+    /// let options = vec![
+    ///     UnitOption {
+    ///         name: "ExecStart".to_string(),
+    ///         section: "Service".to_string(),
+    ///         value: "/usr/bin/sleep 3000".to_string(),
+    ///     },
+    /// ];
+    ///
+    /// client.create_unit("test.service", UnitStates::Launched, options).unwrap();
+    /// ```
     pub fn create_unit(
         &self,
         name: &str,
@@ -46,6 +120,15 @@ impl Client {
         }
     }
 
+    /// Destroys the unit with the given name.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # extern crate fleet;
+    /// # use fleet::Client;
+    /// # let client = Client::new("http://localhost:2999");
+    /// client.destroy_unit("test.service").ok().unwrap();
     pub fn destroy_unit(&self, name: &str) -> Result<(), FleetError> {
         let url = self.build_url(&format!("/units/{}", name));
         let mut response = try!(self.delete(&url[..]));
@@ -56,6 +139,16 @@ impl Client {
         }
     }
 
+    /// Gets a single unit by name.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # extern crate fleet;
+    /// # use fleet::Client;
+    /// # let client = Client::new("http://localhost:2999");
+    /// client.get_unit("test.service").ok().unwrap();
+    /// ```
     pub fn get_unit(&self, name: &str) -> Result<Unit, FleetError> {
         let url = self.build_url(&format!("/units/{}", name));
         let mut response = try!(self.get(&url[..]));
@@ -161,6 +254,16 @@ impl Client {
         }
     }
 
+    /// Modifies a unit, instructing fleetd to move the unit to a new state.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # extern crate fleet;
+    /// # use fleet::{Client, UnitStates};
+    /// # let client = Client::new("http://localhost:2999");
+    /// client.modify_unit("test.service", UnitStates::Loaded).ok().unwrap();
+    /// ```
     pub fn modify_unit(
         &self,
         name: &str,

@@ -1,8 +1,12 @@
 use rustc_serialize::json::{Json, ToJson};
 
+/// The possible runtime states a unit can be in.
 pub enum UnitStates {
+    /// The unit has not been loaded onto a machine and is not running.
     Inactive,
+    /// The unit has been loaded onto a machine but is not running.
     Loaded,
+    /// The unit has been loaded onto a machine and is running.
     Launched,
 }
 
@@ -29,37 +33,61 @@ impl ToJson for UnitStates {
     }
 }
 
+/// A single line from a unit file. Unit files consist of key/value pairs divided into sections.
 #[derive(RustcEncodable)]
 pub struct UnitOption {
+    /// The key.
     pub name: String,
+    /// The section the key/value pair will appear under.
     pub section: String,
+    /// The value.
     pub value: String,
 }
 
+/// A single fleet unit, which is a systemd unit with optional fleet-specific data.
 pub struct Unit {
+    /// The unit's state.
     pub current_state: UnitStates,
+    /// The unit's future state. Eventually fleetd will move the unit into this state, but it might
+    /// not have happened yet.
     pub desired_state: UnitStates,
+    /// The unique ID of the machine where the unit is loaded/running, unless it is inactive.
     pub machine_id: Option<String>,
+    /// The unit's name.
     pub name: String,
+    /// The lines of key/value pairs that make up a unit file.
     pub options: Vec<UnitOption>,
 }
 
+/// A single page from a paginated collection of units.
 pub struct UnitPage {
+    /// The units in this page.
     pub units: Vec<Unit>,
+    /// If `Some`, at least one additional page is available and can be requested with this token.
     pub next_page_token: Option<String>,
 }
 
+/// The current state of a unit.
 pub struct UnitState {
+    /// The unit's name.
     pub name: String,
+    /// A unique hash for the unit.
     pub hash: String,
+    /// The unique ID of the machine where the unit is loaded/running, unless it is inactive.
     pub machine_id: Option<String>,
+    /// The load state of the unit as reported by systemd.
     pub systemd_load_state: String,
+    /// The active state of the unit as reported by systemd.
     pub systemd_active_state: String,
+    /// The sub state of the unit as reported by systemd.
     pub systemd_sub_state: String,
 }
 
+/// A single page from a paginated collection of unit states.
 pub struct UnitStatePage {
+    /// The unit states in this page.
     pub states: Vec<UnitState>,
+    /// If `Some`, at least one additional page is available and can be requested with this token.
     pub next_page_token: Option<String>,
 }
 

@@ -1,13 +1,20 @@
 use std::collections::HashMap;
 
+/// A host node running fleetd.
 pub struct Machine {
+    /// The machine's unique ID.
     pub id: String,
+    /// Arbitrary fleet metadata associated with the machine.
     pub metadata: HashMap<String, String>,
+    /// The machine's IP address.
     pub primary_ip: String,
 }
 
+/// A single page from a paginated collection of machines.
 pub struct MachinePage {
+    /// The machines in this page.
     pub machines: Vec<Machine>,
+    /// If `Some`, at least one additional page is available and can be requested with this token.
     pub next_page_token: Option<String>,
 }
 

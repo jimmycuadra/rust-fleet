@@ -5,9 +5,13 @@ use hyper::client::Response;
 use hyper::error::HttpError;
 use rustc_serialize::json::Json;
 
+/// An error returned by `Client` when an API call fails.
 pub struct FleetError {
-    code: Option<u16>,
-    message: Option<String>,
+    /// An HTTP status code returned by the fleet API.
+    pub code: Option<u16>,
+    /// A message describing the error. This message comes from fleet directly whenever fleet
+    /// provides a message.
+    pub message: Option<String>,
 }
 
 impl FleetError {
