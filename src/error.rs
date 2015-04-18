@@ -15,6 +15,8 @@ pub struct FleetError {
 }
 
 impl FleetError {
+    /// Constructs a new `FleetError` from a `hyper::error::HttpError`. Not intended for public
+    /// use.
     pub fn from_hyper_error(error: &HttpError) -> FleetError {
         FleetError {
             code: None,
@@ -22,6 +24,8 @@ impl FleetError {
         }
     }
 
+    /// Constructs a new `FleetError` from a `hyper::client::Response`. Not intended for public
+    /// use.
     pub fn from_hyper_response(response: &mut Response) -> FleetError {
         FleetError {
             code: Some(response.status.to_u16()),

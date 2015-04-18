@@ -13,6 +13,18 @@ use serialize::{self, CreateUnit, ModifyUnit};
 
 /// An API client for fleet.
 ///
+/// # Pagination
+///
+/// TODO: Document the pagination API.
+///
+/// # Failures
+///
+/// Each method involves making an HTTP request to the fleet API and can possibly result in an
+/// error. Errors may occur either due to problems with the HTTP request itself (such as network
+/// errors) or because the fleet API returned an explicit error code and message. In the *failures*
+/// sections for the methods below, the error conditions that the fleet API itself can return are
+/// detailed, but this is not an exhaustive list of reasons a request might fail.
+///
 /// # Examples
 ///
 /// ```
@@ -80,8 +92,7 @@ impl Client {
     ///
     /// # Failures
     ///
-    /// Returns a `FleetError` if there is a problem with the HTTP request to the API or the API
-    /// itself returns an error.
+    /// TODO: Document possible API error responses.
     ///
     /// # Examples
     ///
@@ -122,6 +133,10 @@ impl Client {
 
     /// Destroys the unit with the given name.
     ///
+    /// # Failures
+    ///
+    /// TODO: Document possible API error responses.
+    ///
     /// # Examples
     ///
     /// ```
@@ -140,6 +155,10 @@ impl Client {
     }
 
     /// Gets a single unit by name.
+    ///
+    /// # Failures
+    ///
+    /// TODO: Document possible API error responses.
     ///
     /// # Examples
     ///
@@ -163,6 +182,27 @@ impl Client {
         }
     }
 
+    /// Lists machines in the fleet cluster. This is a paginated resource.
+    ///
+    /// # Failures
+    ///
+    /// TODO: Document possible API error responses.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # extern crate fleet;
+    /// # use fleet::Client;
+    /// # let client = Client::new("http://localhost:2999");
+    /// match client.list_machines("test.service") {
+    ///     Ok(machine_page) {
+    ///         for machine in machine_page.machines {
+    ///             println!("Machine {}", machine.id);
+    ///         }
+    ///     },
+    ///     None => println!("No machines found"),
+    /// };
+    /// ```
     pub fn list_machines(&self) -> Result<MachinePage, FleetError> {
         let url = self.build_url(&format!("/machines"));
         let mut response = try!(self.get(&url[..]));
@@ -191,6 +231,30 @@ impl Client {
         }
     }
 
+    /// Lists the states of units in the fleet cluster. This is a paginated resource.
+    ///
+    /// If `Some` values are provided for `machine_id` or `unit_name`, they will be used to filter
+    /// the unit states to only those matching the supplied values.
+    ///
+    /// # Failures
+    ///
+    /// TODO: Document possible API error responses.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # extern crate fleet;
+    /// # use fleet::Client;
+    /// # let client = Client::new("http://localhost:2999");
+    /// match client.list_unit_states(None, None) {
+    ///     Ok(unit_state_page) {
+    ///         for state in unit_state_page.states {
+    ///             println!("{}: {}", state.name, state.systemd_load_state);
+    ///         }
+    ///     },
+    ///     None => println!("No units found"),
+    /// };
+    /// ```
     pub fn list_unit_states(
         &self,
         machine_id: Option<&str>,
@@ -235,6 +299,27 @@ impl Client {
         }
     }
 
+    /// Lists the units in the fleet cluster. This is a paginated resource.
+    ///
+    /// # Failures
+    ///
+    /// TODO: Document possible API error responses.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # extern crate fleet;
+    /// # use fleet::Client;
+    /// # let client = Client::new("http://localhost:2999");
+    /// match client.list_units() {
+    ///     Ok(unit_page) {
+    ///         for unit in unit_page.units {
+    ///             println!("{}: {}", state.name, state.current_state);
+    ///         }
+    ///     },
+    ///     None => println!("No units found"),
+    /// };
+    /// ```
     pub fn list_units(&self) -> Result<UnitPage, FleetError> {
         let url = self.build_url("/units");
         let mut response = try!(self.get(&url[..]));
@@ -255,6 +340,10 @@ impl Client {
     }
 
     /// Modifies a unit, instructing fleetd to move the unit to a new state.
+    ///
+    /// # Failures
+    ///
+    /// TODO: Document possible API error responses.
     ///
     /// # Examples
     ///

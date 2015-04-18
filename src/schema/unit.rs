@@ -11,6 +11,17 @@ pub enum UnitStates {
 }
 
 impl UnitStates {
+    /// Returns the `UnitStates` variant corresponding to a string representation.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the string representation provided does not match a valid variant.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// UnitStates::from_str("launched") # UnitStates::Launched
+    /// ```
     pub fn from_str(s: &str) -> UnitStates {
         match s {
             "inactive" => UnitStates::Inactive,
