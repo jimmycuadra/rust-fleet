@@ -15,7 +15,12 @@ use serialize::{self, CreateUnit, ModifyUnit};
 ///
 /// # Pagination
 ///
-/// TODO: Document the pagination API.
+/// Methods that return a collection of resources are paginated. On a successful API call, a
+/// special "page" type will be returned. This type contains a vector of values of that resource
+/// type and an optional "next page token." If this token is present, it indicates that at least
+/// one additional page of resources is available. To make another call for the next page, pass
+/// this token in to the API method. When the token value is `None`, the last page has been
+/// reached.
 ///
 /// # Failures
 ///
@@ -34,7 +39,7 @@ use serialize::{self, CreateUnit, ModifyUnit};
 ///
 /// let client = Client::new("http://localhost:2999");
 ///
-/// match client.list_units() {
+/// match client.list_units(None) {
 ///     Ok(unit_page) => {
 ///         for unit in unit_page.units {
 ///             println!("{}", unit.name);
@@ -194,7 +199,7 @@ impl Client {
     /// # extern crate fleet;
     /// # use fleet::Client;
     /// # let client = Client::new("http://localhost:2999");
-    /// match client.list_machines("test.service") {
+    /// match client.list_machines(None) {
     ///     Ok(machine_page) {
     ///         for machine in machine_page.machines {
     ///             println!("Machine {}", machine.id);
@@ -203,7 +208,10 @@ impl Client {
     ///     None => println!("No machines found"),
     /// };
     /// ```
-    pub fn list_machines(&self) -> Result<MachinePage, FleetError> {
+    pub fn list_machines(
+        &self,
+        next_page_token: Option<String>,
+    ) -> Result<MachinePage, FleetError> {
         let url = self.build_url(&format!("/machines"));
         let mut response = try!(self.get(&url[..]));
 
@@ -246,7 +254,7 @@ impl Client {
     /// # extern crate fleet;
     /// # use fleet::Client;
     /// # let client = Client::new("http://localhost:2999");
-    /// match client.list_unit_states(None, None) {
+    /// match client.list_unit_states(None, None, None) {
     ///     Ok(unit_state_page) {
     ///         for state in unit_state_page.states {
     ///             println!("{}: {}", state.name, state.systemd_load_state);
@@ -258,7 +266,8 @@ impl Client {
     pub fn list_unit_states(
         &self,
         machine_id: Option<&str>,
-        unit_name: Option<&str>
+        unit_name: Option<&str>,
+        next_page_token: Option<String>,
     ) -> Result<UnitStatePage, FleetError> {
         let mut query_pairs = HashMap::new();
 
@@ -311,7 +320,7 @@ impl Client {
     /// # extern crate fleet;
     /// # use fleet::Client;
     /// # let client = Client::new("http://localhost:2999");
-    /// match client.list_units() {
+    /// match client.list_units(None) {
     ///     Ok(unit_page) {
     ///         for unit in unit_page.units {
     ///             println!("{}: {}", state.name, state.current_state);
@@ -320,7 +329,7 @@ impl Client {
     ///     None => println!("No units found"),
     /// };
     /// ```
-    pub fn list_units(&self) -> Result<UnitPage, FleetError> {
+    pub fn list_units(&self, next_page_token: Option<String>) -> Result<UnitPage, FleetError> {
         let url = self.build_url("/units");
         let mut response = try!(self.get(&url[..]));
 
