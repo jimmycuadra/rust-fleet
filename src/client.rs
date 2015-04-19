@@ -13,6 +13,9 @@ use serialize::{self, CreateUnit, ModifyUnit};
 
 /// An API client for fleet.
 ///
+/// Provides methods for basic CRUD operations on fleet units as well as for listing machines in the
+/// fleet cluster.
+///
 /// # Pagination
 ///
 /// Methods that return a collection of resources are paginated. On a successful API call, a
