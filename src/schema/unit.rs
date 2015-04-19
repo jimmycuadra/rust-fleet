@@ -20,7 +20,8 @@ impl UnitStates {
     /// # Examples
     ///
     /// ```
-    /// UnitStates::from_str("launched") # UnitStates::Launched
+    /// # use fleet::UnitStates;
+    /// UnitStates::from_str("launched"); // UnitStates::Launched
     /// ```
     pub fn from_str(s: &str) -> UnitStates {
         match s {

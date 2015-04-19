@@ -35,20 +35,18 @@ use serialize::{self, CreateUnit, ModifyUnit};
 ///
 /// # Examples
 ///
-/// ```
-/// extern crate fleet;
-///
+/// ```no_run
 /// use fleet::Client;
 ///
-/// let client = Client::new("http://localhost:2999");
+/// let client = Client::new("http://localhost:2999").ok().unwrap();
 ///
 /// match client.list_units(None) {
 ///     Ok(unit_page) => {
-///         for unit in unit_page.units {
+///         for unit in unit_page.units.iter() {
 ///             println!("{}", unit.name);
 ///         }
 ///     },
-///     None => println!("No units in fleet!"),
+///     Err(err) => println!("API error: {}", err),
 /// };
 pub struct Client {
     root_url: String,
@@ -104,10 +102,9 @@ impl Client {
     ///
     /// # Examples
     ///
-    /// ```
-    /// # extern create fleet;
-    /// # use fleet::{Client, UnitOption};
-    /// # let client = Client::new("http://localhost:2999").unwrap();
+    /// ```no_run
+    /// # use fleet::{Client, UnitOption, UnitStates};
+    /// # let client = Client::new("http://localhost:2999").ok().unwrap();
     /// let options = vec![
     ///     UnitOption {
     ///         name: "ExecStart".to_string(),
@@ -116,7 +113,7 @@ impl Client {
     ///     },
     /// ];
     ///
-    /// client.create_unit("test.service", UnitStates::Launched, options).unwrap();
+    /// client.create_unit("test.service", UnitStates::Launched, options).ok().unwrap();
     /// ```
     pub fn create_unit(
         &self,
@@ -147,10 +144,9 @@ impl Client {
     ///
     /// # Examples
     ///
-    /// ```
-    /// # extern crate fleet;
+    /// ```no_run
     /// # use fleet::Client;
-    /// # let client = Client::new("http://localhost:2999");
+    /// # let client = Client::new("http://localhost:2999").ok().unwrap();
     /// client.destroy_unit("test.service").ok().unwrap();
     pub fn destroy_unit(&self, name: &str) -> Result<(), FleetError> {
         let url = self.build_url(&format!("/units/{}", name));
@@ -170,10 +166,9 @@ impl Client {
     ///
     /// # Examples
     ///
-    /// ```
-    /// # extern crate fleet;
+    /// ```no_run
     /// # use fleet::Client;
-    /// # let client = Client::new("http://localhost:2999");
+    /// # let client = Client::new("http://localhost:2999").ok().unwrap();
     /// client.get_unit("test.service").ok().unwrap();
     /// ```
     pub fn get_unit(&self, name: &str) -> Result<Unit, FleetError> {
@@ -198,17 +193,16 @@ impl Client {
     ///
     /// # Examples
     ///
-    /// ```
-    /// # extern crate fleet;
+    /// ```no_run
     /// # use fleet::Client;
-    /// # let client = Client::new("http://localhost:2999");
+    /// # let client = Client::new("http://localhost:2999").ok().unwrap();
     /// match client.list_machines(None) {
-    ///     Ok(machine_page) {
-    ///         for machine in machine_page.machines {
+    ///     Ok(machine_page) => {
+    ///         for machine in machine_page.machines.iter() {
     ///             println!("Machine {}", machine.id);
     ///         }
     ///     },
-    ///     None => println!("No machines found"),
+    ///     Err(err) => println!("API error: {}", err),
     /// };
     /// ```
     pub fn list_machines(
@@ -253,17 +247,16 @@ impl Client {
     ///
     /// # Examples
     ///
-    /// ```
-    /// # extern crate fleet;
+    /// ```no_run
     /// # use fleet::Client;
-    /// # let client = Client::new("http://localhost:2999");
+    /// # let client = Client::new("http://localhost:2999").ok().unwrap();
     /// match client.list_unit_states(None, None, None) {
-    ///     Ok(unit_state_page) {
-    ///         for state in unit_state_page.states {
+    ///     Ok(unit_state_page) => {
+    ///         for state in unit_state_page.states.iter() {
     ///             println!("{}: {}", state.name, state.systemd_load_state);
     ///         }
     ///     },
-    ///     None => println!("No units found"),
+    ///     Err(err) => println!("API error: {}", err),
     /// };
     /// ```
     pub fn list_unit_states(
@@ -319,17 +312,16 @@ impl Client {
     ///
     /// # Examples
     ///
-    /// ```
-    /// # extern crate fleet;
+    /// ```no_run
     /// # use fleet::Client;
-    /// # let client = Client::new("http://localhost:2999");
+    /// # let client = Client::new("http://localhost:2999").ok().unwrap();
     /// match client.list_units(None) {
-    ///     Ok(unit_page) {
-    ///         for unit in unit_page.units {
-    ///             println!("{}: {}", state.name, state.current_state);
+    ///     Ok(unit_page) => {
+    ///         for unit in unit_page.units.iter() {
+    ///             println!("{}", unit.name);
     ///         }
     ///     },
-    ///     None => println!("No units found"),
+    ///     Err(err) => println!("API error: {}", err),
     /// };
     /// ```
     pub fn list_units(&self, next_page_token: Option<String>) -> Result<UnitPage, FleetError> {
@@ -359,10 +351,9 @@ impl Client {
     ///
     /// # Examples
     ///
-    /// ```
-    /// # extern crate fleet;
+    /// ```no_run
     /// # use fleet::{Client, UnitStates};
-    /// # let client = Client::new("http://localhost:2999");
+    /// # let client = Client::new("http://localhost:2999").ok().unwrap();
     /// client.modify_unit("test.service", UnitStates::Loaded).ok().unwrap();
     /// ```
     pub fn modify_unit(

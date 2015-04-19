@@ -42,7 +42,7 @@ fn unit_lifecycle() {
 
     // List units
 
-    let unit_pages = client.list_units().ok().unwrap();
+    let unit_pages = client.list_units(None).ok().unwrap();
 
     assert_eq!(unit_pages.units.len(), 1);
 
@@ -54,9 +54,10 @@ fn unit_lifecycle() {
 
     // for some reason GET /state sometimes returns no results even when there should be
     let unit_state_pages = retry(5, 500, || {
-        client.list_unit_states(None, None).ok().unwrap()
+        client.list_unit_states(None, None, None).ok().unwrap()
     }, |unit_state_pages| {
-        unit_state_pages.states.len() > 0
+        unit_state_pages.states.len() > 0 &&
+            unit_state_pages.states[0].systemd_active_state == "inactive"
     }).ok().unwrap();
 
     let unit_state = &unit_state_pages.states[0];
@@ -100,7 +101,7 @@ fn create_invalid_unit_missing_options() {
 fn list_machines() {
     let client = Client::new("http://localhost:2999").unwrap();
 
-    let machine_pages = client.list_machines().ok().unwrap();
+    let machine_pages = client.list_machines(None).ok().unwrap();
 
     assert_eq!(machine_pages.machines.len(), 1);
 }
